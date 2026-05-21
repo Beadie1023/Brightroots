@@ -1,0 +1,345 @@
+You are a senior full-stack developer, UX designer, and early childhood education specialist.
+
+Your task is to build a COMPLETE lightweight homeschool learning app called:
+
+BRIGHTROOTS ADVENTURE
+
+IMPORTANT DEVELOPMENT RULES:
+- Minimize token usage and unnecessary complexity
+- Generate a COMPLETE working MVP in ONE build
+- Use VERY SIMPLE architecture
+- Avoid React, TypeScript, Tailwind, Vite, Webpack, or large frameworks
+- Use only:
+  - HTML
+  - CSS
+  - Vanilla JavaScript
+  - Node.js
+  - Express
+  - SQLite
+- Keep all logic readable and compact
+- Build mobile-first
+- Optimize for Replit free-tier credits
+- Do not generate unnecessary comments
+- Do not over-engineer
+
+==================================================
+APP PURPOSE
+
+This is a story-driven homeschool app for children ages 2–7.
+
+The app teaches:
+- Math
+- Reading
+- Spelling
+- Grammar
+- Logic
+- Financial literacy
+
+The app must:
+- Work offline after first load
+- Use voice guidance
+- Use adaptive learning logic
+- Use gamification
+- Be engaging and colorful
+- Keep kids focused with short activities
+
+==================================================
+FILE STRUCTURE
+
+Generate ONLY these files:
+
+/server.js
+/public/index.html
+/public/styles.css
+/public/app.js
+/package.json
+
+Do not create extra folders or unnecessary files.
+
+==================================================
+BACKEND REQUIREMENTS
+
+Use Express server.
+
+Requirements:
+- Serve static files from /public
+- Use SQLite database
+- Create child profiles table:
+  id
+  name
+  age
+  coins
+  progress
+
+Add API routes:
+- GET /profiles
+- POST /profiles
+- PUT /progress
+
+Keep backend minimal.
+
+==================================================
+OFFLINE SUPPORT
+
+Requirements:
+- Use LocalStorage for:
+  - lessons cache
+  - progress
+  - coins
+- App must continue working offline after first load
+- No service worker needed unless lightweight
+
+==================================================
+CHILD PROFILE SYSTEM
+
+Parent creates child profile:
+- Name
+- Age group:
+  - 2–3
+  - 4–5
+  - 6–7
+
+Store:
+- Coins
+- Progress
+- Accuracy
+
+==================================================
+UI REQUIREMENTS
+
+Design:
+- Bright kid-friendly colors
+- Rounded buttons
+- Large touch targets
+- Minimal text for younger kids
+- Mobile-first responsive layout
+
+Screens:
+1. Welcome Screen
+2. Create Child Profile
+3. Dashboard
+4. Lesson Screen
+5. Reward Screen
+6. Parent Progress Screen
+
+Dashboard shows:
+- Child name
+- Coins
+- Progress bar
+- Subject buttons
+
+==================================================
+SUBJECTS
+
+Create these learning worlds:
+
+🌴 Jungle of Numbers = Math
+📚 Word Village = Reading
+🧠 Puzzle Island = Logic
+🏦 Money Town = Finance
+✍️ Grammar City = Grammar
+🔤 Spelling Station = Spelling
+
+==================================================
+LESSON ENGINE
+
+Create ONE reusable lesson engine.
+
+Each lesson contains:
+- Story intro
+- Question
+- 3 answer buttons
+- Correct/incorrect feedback
+- Coin reward
+
+Do NOT create separate screens per lesson.
+
+==================================================
+300+ LESSON SYSTEM
+
+Generate lessons dynamically using loops and arrays.
+
+Use this structure:
+
+const lessons = [];
+
+function addLesson(id, age, subject, level, story, question, options, answer, reward)
+
+==================================================
+GENERATE LESSONS FOR:
+
+AGES:
+- 2–3
+- 4–5
+- 6–7
+
+SUBJECTS:
+- Math
+- Reading
+- Spelling
+- Logic
+- Grammar
+- Money
+
+LEVELS:
+1–10
+
+==================================================
+LESSON TYPES
+
+MATH:
+- Counting
+- Addition
+- Subtraction
+- Number recognition
+
+READING:
+- Letter recognition
+- Phonics
+- Sentence recognition
+
+SPELLING:
+- Build words
+- Missing letters
+
+LOGIC:
+- Patterns
+- Matching
+- Odd one out
+
+GRAMMAR:
+- Nouns
+- Verbs
+- Sentence completion
+
+MONEY:
+- Earning
+- Saving
+- Spending
+- Budget choices
+
+==================================================
+STORY SYSTEM
+
+Use reusable story generators.
+
+Create arrays:
+
+const characters = [
+ "monkey",
+ "pirate",
+ "robot",
+ "lion",
+ "astronaut"
+];
+
+const items = [
+ "🍎",
+ "🍌",
+ "⭐",
+ "⚽",
+ "💎"
+];
+
+Generate story intros dynamically.
+
+Example:
+"Help the pirate collect treasure!"
+
+==================================================
+VOICE GUIDANCE
+
+Use browser speech synthesis ONLY.
+
+Create:
+function speak(text)
+
+Requirements:
+- Auto-read questions for ages 2–5
+- Add speaker button 🔊
+- Use speechSynthesis API
+- No external APIs
+
+==================================================
+ADAPTIVE LEARNING SYSTEM
+
+Track:
+- Correct answers
+- Wrong answers
+- Accuracy percentage
+
+Difficulty system:
+- Easy
+- Medium
+- Hard
+
+Rules:
+- If child struggles:
+  easier lessons
+- If child succeeds:
+  harder lessons
+
+Use lightweight logic only.
+
+==================================================
+GAMIFICATION
+
+Requirements:
+- Earn coins
+- Show reward popup
+- Daily streak counter
+- Progress bar
+- Celebration animation using simple CSS
+
+No external game engines.
+
+==================================================
+PARENT DASHBOARD
+
+Parent can:
+- View child progress
+- Reset progress
+- See strongest subject
+- See weakest subject
+
+==================================================
+PERFORMANCE RULES
+
+IMPORTANT:
+- Keep JavaScript lightweight
+- Avoid unnecessary DOM rendering
+- No heavy animations
+- No unnecessary libraries
+- Reuse components/functions
+- Minimize API calls
+- Keep SQLite usage simple
+
+==================================================
+PACKAGE.JSON
+
+Include only minimal dependencies:
+- express
+- sqlite3
+
+==================================================
+RUN INSTRUCTIONS
+
+At end provide:
+npm install
+node server.js
+
+==================================================
+FINAL GOAL
+
+Generate a COMPLETE, polished, mobile-friendly homeschool learning app with:
+- 300+ dynamic lessons
+- Story-driven learning
+- Voice guidance
+- Adaptive learning
+- Offline functionality
+- Coins/rewards system
+- Parent dashboard
+
+The app should be fully usable immediately after running:
+npm install
+node server.js

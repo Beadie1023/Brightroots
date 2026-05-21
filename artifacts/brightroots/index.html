@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>BrightRoots Adventure</title>
+    <meta name="description" content="A story-driven homeschool learning app for children ages 2–7 with 300+ lessons." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+
+    <!-- SCREEN: Welcome -->
+    <div id="screen-welcome" class="screen active">
+      <div class="welcome-bg">
+        <div class="clouds"><span>☁️</span><span>☁️</span><span>☁️</span></div>
+        <div class="sun">☀️</div>
+      </div>
+      <div class="welcome-content">
+        <div class="logo-bounce">🌱</div>
+        <h1 class="app-title">BrightRoots<br/><span>Adventure</span></h1>
+        <p class="tagline">Learn · Play · Grow!</p>
+        <button class="btn btn-primary btn-xl" id="btn-start">Let's Go! 🚀</button>
+      </div>
+      <div class="wave-row">🌊🌊🌊🌊🌊🌊🌊🌊🌊🌊</div>
+    </div>
+
+    <!-- SCREEN: Profile Select -->
+    <div id="screen-profiles" class="screen">
+      <div class="screen-header">
+        <h2>👋 Who's Learning Today?</h2>
+        <button class="btn btn-outline" id="btn-add-profile">➕ New</button>
+      </div>
+      <div id="profile-list" class="profile-grid"></div>
+      <div class="parent-link">
+        <button class="btn btn-ghost" id="btn-parent-mode">🔒 Parent Dashboard</button>
+      </div>
+    </div>
+
+    <!-- SCREEN: Create Profile -->
+    <div id="screen-create-profile" class="screen">
+      <div class="screen-header">
+        <button class="btn btn-back" id="btn-back-to-profiles">← Back</button>
+        <h2>New Learner 🌟</h2>
+      </div>
+      <div class="form-card">
+        <div class="avatar-picker" id="avatar-picker">
+          <span class="avatar-opt active" data-avatar="🐻">🐻</span>
+          <span class="avatar-opt" data-avatar="🦁">🦁</span>
+          <span class="avatar-opt" data-avatar="🐼">🐼</span>
+          <span class="avatar-opt" data-avatar="🦊">🦊</span>
+          <span class="avatar-opt" data-avatar="🐸">🐸</span>
+          <span class="avatar-opt" data-avatar="🐙">🐙</span>
+          <span class="avatar-opt" data-avatar="🦄">🦄</span>
+          <span class="avatar-opt" data-avatar="🐲">🐲</span>
+        </div>
+        <div class="field">
+          <label>What's your name? 😊</label>
+          <input type="text" id="input-name" placeholder="e.g. Emma" maxlength="20" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>How old are you?</label>
+          <div class="age-group-picker" id="age-picker">
+            <button class="age-btn" data-age="2-3">2–3</button>
+            <button class="age-btn" data-age="4-5">4–5</button>
+            <button class="age-btn" data-age="6-7">6–7</button>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-lg" id="btn-create-profile">Create! 🎉</button>
+        <div id="create-error" class="error-msg"></div>
+      </div>
+    </div>
+
+    <!-- SCREEN: Dashboard -->
+    <div id="screen-dashboard" class="screen">
+      <div class="dash-header">
+        <div class="profile-chip">
+          <span id="dash-avatar">🐻</span>
+          <div class="profile-chip-info">
+            <div class="profile-name" id="dash-name">Player</div>
+            <div class="coins-row">🪙 <span id="dash-coins">0</span> coins</div>
+          </div>
+        </div>
+        <div class="streak-box">🔥<span id="dash-streak">0</span></div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-label">Today's Progress</div>
+        <div class="progress-bar-bg"><div class="progress-bar" id="dash-progress-bar" style="width:0%"></div></div>
+      </div>
+      <div class="section-label">Choose Your World!</div>
+      <div class="subject-grid">
+        <button class="subject-btn" data-subject="math" style="--sc:#22c55e">
+          <span class="subject-icon">🌴</span>
+          <span class="subject-name">Jungle of Numbers</span>
+          <span class="subject-sub">Math</span>
+        </button>
+        <button class="subject-btn" data-subject="reading" style="--sc:#3b82f6">
+          <span class="subject-icon">📚</span>
+          <span class="subject-name">Word Village</span>
+          <span class="subject-sub">Reading</span>
+        </button>
+        <button class="subject-btn" data-subject="logic" style="--sc:#a855f7">
+          <span class="subject-icon">🧠</span>
+          <span class="subject-name">Puzzle Island</span>
+          <span class="subject-sub">Logic</span>
+        </button>
+        <button class="subject-btn" data-subject="money" style="--sc:#f59e0b">
+          <span class="subject-icon">🏦</span>
+          <span class="subject-name">Money Town</span>
+          <span class="subject-sub">Finance</span>
+        </button>
+        <button class="subject-btn" data-subject="grammar" style="--sc:#ef4444">
+          <span class="subject-icon">✍️</span>
+          <span class="subject-name">Grammar City</span>
+          <span class="subject-sub">Grammar</span>
+        </button>
+        <button class="subject-btn" data-subject="spelling" style="--sc:#ec4899">
+          <span class="subject-icon">🔤</span>
+          <span class="subject-name">Spelling Station</span>
+          <span class="subject-sub">Spelling</span>
+        </button>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="btn-switch-profile">👥 Switch Profile</button>
+    </div>
+
+    <!-- SCREEN: Lesson -->
+    <div id="screen-lesson" class="screen">
+      <div class="lesson-header">
+        <button class="btn btn-back" id="btn-back-to-dash">🏠</button>
+        <span id="lesson-subject-label" class="subject-tag">Math</span>
+        <button class="btn btn-icon" id="btn-speak">🔊</button>
+      </div>
+      <div class="lesson-card">
+        <div class="story-box" id="lesson-story"></div>
+        <div class="question-box" id="lesson-question"></div>
+        <div class="options-grid" id="lesson-options"></div>
+      </div>
+      <div class="lesson-footer">
+        <div class="lesson-dots" id="lesson-dots"></div>
+        <div class="lesson-coins-badge">🪙 +<span id="lesson-reward">5</span></div>
+      </div>
+    </div>
+
+    <!-- SCREEN: Reward -->
+    <div id="screen-reward" class="screen">
+      <canvas id="confetti-canvas"></canvas>
+      <div class="reward-content">
+        <div class="reward-emoji" id="reward-emoji">⭐</div>
+        <h2 id="reward-title">Amazing!</h2>
+        <p id="reward-msg">You got it right!</p>
+        <div class="reward-coins-badge">🪙 +<span id="reward-coins">5</span></div>
+        <button class="btn btn-primary btn-xl" id="btn-next-lesson">Next Lesson →</button>
+        <button class="btn btn-ghost" id="btn-reward-home">🏠 Home</button>
+      </div>
+    </div>
+
+    <!-- SCREEN: Wrong Answer -->
+    <div id="screen-wrong" class="screen">
+      <div class="wrong-content">
+        <div class="wrong-emoji">😢</div>
+        <h2>Not quite!</h2>
+        <p id="wrong-msg">The correct answer was:</p>
+        <div class="correct-answer-box" id="correct-answer-box"></div>
+        <button class="btn btn-primary btn-xl" id="btn-try-next">Keep Going! 💪</button>
+      </div>
+    </div>
+
+    <!-- SCREEN: Parent Dashboard -->
+    <div id="screen-parent" class="screen">
+      <div class="screen-header">
+        <button class="btn btn-back" id="btn-back-from-parent">← Back</button>
+        <h2>Parent Dashboard 👨‍👩‍👧</h2>
+      </div>
+      <div id="parent-content" class="parent-content"></div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

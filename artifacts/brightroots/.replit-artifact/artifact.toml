@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "BrightRoots Adventure"
+version = "1.0.0"
+id = "artifacts/brightroots"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19083
+
+[services.development]
+run = "pnpm --filter @workspace/brightroots run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/brightroots", "run", "build" ]
+publicDir = "artifacts/brightroots/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19083"
+BASE_PATH = "/"
