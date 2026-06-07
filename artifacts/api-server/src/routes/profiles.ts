@@ -51,7 +51,7 @@ router.get("/profiles/:id", async (req, res) => {
 });
 
 router.delete("/profiles/:id", requireParentAuth, async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
   try {
     await db.delete(profilesTable).where(eq(profilesTable.id, id));
@@ -103,7 +103,7 @@ router.put("/profiles/:id/progress", async (req, res) => {
 });
 
 router.put("/profiles/:id/reset", requireParentAuth, async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
   try {
     const [updated] = await db
