@@ -26,6 +26,21 @@ interface Lesson {
   reward: number;
 }
 
+interface PendingSync {
+  profileId: number;
+  subject: string;
+  correct: boolean;
+  coins: number;
+  ts: number;
+}
+
+interface TempProfile {
+  tempId: number;
+  name: string;
+  ageGroup: string;
+  avatar: string;
+}
+
 // ── State ──────────────────────────────────────────────────────────────────
 let currentProfile: Profile | null = null;
 let currentSubject = "";
@@ -498,7 +513,9 @@ async function apiGetProfiles(): Promise<Profile[]> {
   try {
     const res = await fetch(`${API}/profiles`);
     const data = await res.json();
-    return data.map(attachAvatar);
+    const profiles = data.map(attachAvatar);
+    reconcileTempProfiles(profiles);
+    return profiles;
   } catch { return getLocalProfiles(); }
 }
 
@@ -514,11 +531,13 @@ async function apiCreateProfile(name: string, ageGroup: string, avatar: string):
     saveLocalProfile(profile);
     return profile;
   } catch {
+    const tempId = Date.now();
     const profile: Profile = {
-      id: Date.now(), name, ageGroup: ageGroup as Profile["ageGroup"], avatar,
+      id: tempId, name, ageGroup: ageGroup as Profile["ageGroup"], avatar,
       coins: 0, streak: 0, progress: {}, accuracy: {}, createdAt: new Date().toISOString(),
     };
     saveLocalProfile(profile);
+    saveTempProfile({ tempId, name, ageGroup, avatar });
     return profile;
   }
 }
@@ -543,7 +562,9 @@ async function apiUpdateProgress(profileId: number, subject: string, correct: bo
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ subject, correct, coins }),
     });
-  } catch { /* offline — local already saved */ }
+  } catch {
+    queueSync({ profileId, subject, correct, coins, ts: Date.now() });
+  }
 }
 
 async function apiDeleteProfile(id: number) {
@@ -568,6 +589,114 @@ function attachAvatar(p: Profile): Profile {
   return { ...p, avatar: local?.avatar ?? p.avatar ?? "🐻" };
 }
 
+// ── Offline Sync Queue ────────────────────────────────────────────────────────
+function getSyncQueue(): PendingSync[] {
+  try { return JSON.parse(localStorage.getItem("br_sync_queue") || "[]"); } catch { return []; }
+}
+function queueSync(entry: PendingSync) {
+  const q = getSyncQueue();
+  q.push(entry);
+  localStorage.setItem("br_sync_queue", JSON.stringify(q));
+}
+async function drainSyncQueue() {
+  const q = getSyncQueue();
+  if (q.length === 0) return;
+  const failed: PendingSync[] = [];
+  for (const entry of q) {
+    try {
+      const res = await fetch(`${API}/profiles/${entry.profileId}/progress`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject: entry.subject, correct: entry.correct, coins: entry.coins }),
+      });
+      if (!res.ok) failed.push(entry);
+    } catch {
+      failed.push(entry);
+      break;
+    }
+  }
+  localStorage.setItem("br_sync_queue", JSON.stringify(failed));
+}
+
+// ── Temp Profile Registry (offline creation) ──────────────────────────────────
+function getTempProfiles(): TempProfile[] {
+  try { return JSON.parse(localStorage.getItem("br_temp_profiles") || "[]"); } catch { return []; }
+}
+function saveTempProfile(entry: TempProfile) {
+  const existing = getTempProfiles();
+  existing.push(entry);
+  localStorage.setItem("br_temp_profiles", JSON.stringify(existing));
+}
+function reconcileTempProfiles(liveProfiles: Profile[]) {
+  const temps = getTempProfiles();
+  if (temps.length === 0) return;
+
+  const localProfiles = getLocalProfiles();
+  let anyReconciled = false;
+
+  for (const temp of temps) {
+    const match = liveProfiles.find(
+      lp => lp.name.toLowerCase() === temp.name.toLowerCase() && lp.ageGroup === temp.ageGroup
+    );
+    if (!match) continue;
+
+    const localTemp = localProfiles.find(lp => lp.id === temp.tempId);
+    if (localTemp) {
+      const merged: Profile = {
+        ...match,
+        avatar: temp.avatar,
+        coins: Math.max(match.coins, localTemp.coins),
+        streak: Math.max(match.streak, localTemp.streak),
+        progress: mergeProgress(match.progress, localTemp.progress),
+        accuracy: mergeAccuracy(match.accuracy, localTemp.accuracy, match.progress, localTemp.progress),
+      };
+      saveLocalProfile(merged);
+
+      const syncQ = getSyncQueue();
+      const remapped = syncQ.map(e => e.profileId === temp.tempId ? { ...e, profileId: match.id } : e);
+      localStorage.setItem("br_sync_queue", JSON.stringify(remapped));
+
+      const remaining = localProfiles.filter(lp => lp.id !== temp.tempId);
+      localStorage.setItem("br_profiles", JSON.stringify(remaining));
+    }
+
+    anyReconciled = true;
+  }
+
+  if (anyReconciled) {
+    const remainingTemps = temps.filter(t => !liveProfiles.find(
+      lp => lp.name.toLowerCase() === t.name.toLowerCase() && lp.ageGroup === t.ageGroup
+    ));
+    localStorage.setItem("br_temp_profiles", JSON.stringify(remainingTemps));
+  }
+}
+
+function mergeProgress(live: Record<string, number>, local: Record<string, number>): Record<string, number> {
+  const result: Record<string, number> = { ...live };
+  for (const [s, v] of Object.entries(local)) {
+    result[s] = Math.max(result[s] ?? 0, v);
+  }
+  return result;
+}
+
+function mergeAccuracy(
+  liveAcc: Record<string, number>, localAcc: Record<string, number>,
+  liveProgress: Record<string, number>, localProgress: Record<string, number>
+): Record<string, number> {
+  const result: Record<string, number> = { ...liveAcc };
+  for (const [s, localA] of Object.entries(localAcc)) {
+    if (result[s] === undefined) {
+      result[s] = localA;
+    } else {
+      const liveN = liveProgress[s] ?? 0;
+      const localN = localProgress[s] ?? 0;
+      const total = liveN + localN;
+      result[s] = total > 0 ? (result[s] * liveN + localA * localN) / total : result[s];
+    }
+  }
+  return result;
+}
+
 // ── Screen Management ─────────────────────────────────────────────────────────
 function showScreen(id: string) {
   document.querySelectorAll<HTMLElement>(".screen").forEach(s => s.classList.remove("active"));
@@ -585,6 +714,7 @@ document.getElementById("btn-start")?.addEventListener("click", () => {
 async function loadProfiles() {
   const list = document.getElementById("profile-list")!;
   list.innerHTML = `<div class="profile-empty">Loading...</div>`;
+  await drainSyncQueue();
   const profiles = await apiGetProfiles();
   renderProfileList(profiles);
 }
