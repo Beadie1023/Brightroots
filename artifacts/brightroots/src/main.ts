@@ -1,13 +1,78 @@
 /* BrightRoots Adventure - Main App */
 import { registerSW } from "virtual:pwa-register";
-registerSW({
+
+function showPwaToast(
+  message: string,
+  action?: { label: string; onClick: () => void },
+  durationMs = 5000,
+) {
+  const existing = document.getElementById("pwa-toast");
+  if (existing) existing.remove();
+
+  const toast = document.createElement("div");
+  toast.id = "pwa-toast";
+  Object.assign(toast.style, {
+    position: "fixed",
+    bottom: "1.25rem",
+    left: "50%",
+    transform: "translateX(-50%)",
+    background: "#1e1b4b",
+    color: "#fff",
+    padding: "0.75rem 1.25rem",
+    borderRadius: "0.75rem",
+    fontSize: "0.9rem",
+    display: "flex",
+    alignItems: "center",
+    gap: "0.75rem",
+    zIndex: "9999",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.35)",
+    fontFamily: "system-ui, sans-serif",
+  });
+
+  const text = document.createElement("span");
+  text.textContent = message;
+  toast.appendChild(text);
+
+  if (action) {
+    const btn = document.createElement("button");
+    btn.textContent = action.label;
+    Object.assign(btn.style, {
+      background: "#6366f1",
+      color: "#fff",
+      border: "none",
+      borderRadius: "0.4rem",
+      padding: "0.3rem 0.7rem",
+      cursor: "pointer",
+      fontSize: "0.85rem",
+      fontWeight: "600",
+    });
+    btn.addEventListener("click", () => {
+      action.onClick();
+      toast.remove();
+    });
+    toast.appendChild(btn);
+  }
+
+  document.body.appendChild(toast);
+
+  if (durationMs > 0) {
+    setTimeout(() => toast.remove(), durationMs);
+  }
+}
+
+const updateSW = registerSW({
   onNeedRefresh() {
-    if (confirm("A new version of BrightRoots is available. Reload to update?")) {
-      window.location.reload();
-    }
+    showPwaToast(
+      "🎉 A new version is available!",
+      {
+        label: "Update",
+        onClick: () => updateSW(true),
+      },
+      0,
+    );
   },
   onOfflineReady() {
-    console.log("BrightRoots Adventure is ready for offline use.");
+    showPwaToast("📚 BrightRoots is ready for offline play!", undefined, 4000);
   },
 });
 

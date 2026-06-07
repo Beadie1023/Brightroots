@@ -16,7 +16,9 @@ export default defineConfig({
   plugins: [
     VitePWA({
       registerType: "autoUpdate",
+
       includeAssets: ["**/*"],
+
       manifest: {
         name: "BrightRoots Adventure",
         short_name: "BrightRoots",
@@ -39,11 +41,35 @@ export default defineConfig({
           },
         ],
       },
+
       workbox: {
         globPatterns: [
           "**/*.{html,css,js,ico,png,svg,webp,jpg,jpeg,gif,mp3,wav,ogg,json,woff,woff2}",
         ],
+
+        navigateFallback: "index.html",
+        navigateFallbackDenylist: [/^\/api\//],
+
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+
         runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith("/api/"),
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "brightroots-api",
+              networkTimeoutSeconds: 10,
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
           {
             urlPattern: ({ request }) =>
               request.destination === "document" ||
@@ -66,8 +92,14 @@ export default defineConfig({
           },
         ],
       },
+
+      devOptions: {
+        enabled: true,
+        type: "module",
+      },
     }),
   ],
+
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "src"),
