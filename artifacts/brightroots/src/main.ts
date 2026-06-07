@@ -1,4 +1,16 @@
 /* BrightRoots Adventure - Main App */
+import { registerSW } from "virtual:pwa-register";
+registerSW({
+  onNeedRefresh() {
+    if (confirm("A new version of BrightRoots is available. Reload to update?")) {
+      window.location.reload();
+    }
+  },
+  onOfflineReady() {
+    console.log("BrightRoots Adventure is ready for offline use.");
+  },
+});
+
 import "./index.css";
 import type { Lesson } from "./lessons/types";
 import { pick, shuffle } from "./lessons/types";
