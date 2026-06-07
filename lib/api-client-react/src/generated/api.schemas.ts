@@ -74,3 +74,11 @@ export interface ProfileStats {
   subjectBreakdown?: SubjectStat[];
 }
 
+export interface PinInput {
+  pin: string;
+}
+
+export interface PinToken {
+  token: string;
+}
+

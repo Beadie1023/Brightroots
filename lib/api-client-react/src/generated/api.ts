@@ -21,6 +21,8 @@ import type {
 
 import type {
   HealthStatus,
+  PinInput,
+  PinToken,
   Profile,
   ProfileInput,
   ProfileStats,
@@ -482,6 +484,77 @@ export const useUpdateProgress = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getUpdateProgressMutationOptions(options));
+    }
+
+export const getVerifyParentPinUrl = () => {
+
+
+
+
+  return `/api/auth/pin`
+}
+
+/**
+ * @summary Verify parent PIN and receive a signed JWT
+ */
+export const verifyParentPin = async (pinInput: PinInput, options?: RequestInit): Promise<PinToken> => {
+
+  return customFetch<PinToken>(getVerifyParentPinUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      pinInput,)
+  }
+);}
+
+
+
+
+export const getVerifyParentPinMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyParentPin>>, TError,{data: BodyType<PinInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof verifyParentPin>>, TError,{data: BodyType<PinInput>}, TContext> => {
+
+const mutationKey = ['verifyParentPin'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof verifyParentPin>>, {data: BodyType<PinInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  verifyParentPin(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type VerifyParentPinMutationResult = NonNullable<Awaited<ReturnType<typeof verifyParentPin>>>
+    export type VerifyParentPinMutationBody = BodyType<PinInput>
+    export type VerifyParentPinMutationError = ErrorType<void>
+
+    /**
+ * @summary Verify parent PIN and receive a signed JWT
+ */
+export const useVerifyParentPin = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyParentPin>>, TError,{data: BodyType<PinInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof verifyParentPin>>,
+        TError,
+        {data: BodyType<PinInput>},
+        TContext
+      > => {
+      return useMutation(getVerifyParentPinMutationOptions(options));
     }
 
 export const getResetProfileUrl = (id: number,) => {

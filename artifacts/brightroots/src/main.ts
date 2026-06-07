@@ -43,6 +43,16 @@ let sessionTotal = 0;
 const LESSONS_PER_SESSION = 5;
 const BASE_PATH = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
 
+// ── Parent Auth Token ─────────────────────────────────────────────────────
+const TOKEN_KEY = "br_parent_token";
+function getParentToken(): string | null { return localStorage.getItem(TOKEN_KEY); }
+function setParentToken(t: string) { localStorage.setItem(TOKEN_KEY, t); }
+function clearParentToken() { localStorage.removeItem(TOKEN_KEY); }
+function parentAuthHeaders(): Record<string, string> {
+  const t = getParentToken();
+  return t ? { Authorization: `Bearer ${t}` } : {};
+}
+
 // ── Adaptive Learning ───────────────────────────────────────────────────────
 function getDifficulty(profile: Profile, subject: string): "easy" | "medium" | "hard" {
   const acc = (profile.accuracy[subject] ?? 0.5);
@@ -91,7 +101,8 @@ const API = `${BASE_PATH}/api`;
 
 async function apiGetProfiles(): Promise<Profile[]> {
   try {
-    const res = await fetch(`${API}/profiles`);
+    const res = await fetch(`${API}/profiles`, { headers: parentAuthHeaders() });
+    if (res.status === 401) { clearParentToken(); return getLocalProfiles(); }
     const data = await res.json();
     const profiles = data.map(attachAvatar);
     reconcileTempProfiles(profiles);
@@ -150,7 +161,9 @@ async function apiUpdateProgress(profileId: number, subject: string, correct: bo
 async function apiDeleteProfile(id: number) {
   const ls = getLocalProfiles().filter(p => p.id !== id);
   localStorage.setItem("br_profiles", JSON.stringify(ls));
-  try { await fetch(`${API}/profiles/${id}`, { method: "DELETE" }); } catch { /* offline */ }
+  try {
+    await fetch(`${API}/profiles/${id}`, { method: "DELETE", headers: parentAuthHeaders() });
+  } catch { /* offline */ }
 }
 
 // ── Local Storage ────────────────────────────────────────────────────────────
@@ -566,15 +579,85 @@ function finishSession() {
   }
 }
 
+// ── PIN ENTRY ──────────────────────────────────────────────────────────────────
+function showPinEntry(onSuccess: () => void) {
+  document.getElementById("pin-modal")?.remove();
+  const modal = document.createElement("div");
+  modal.id = "pin-modal";
+  modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px";
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:20px;padding:32px;max-width:320px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+      <div style="font-size:44px;margin-bottom:8px">🔐</div>
+      <h2 style="margin:0 0 6px;color:#1e293b;font-size:20px">Parent Access</h2>
+      <p style="color:#64748b;margin:0 0 18px;font-size:13px">Enter your 4-digit PIN to view the parent dashboard.</p>
+      <input id="pin-input" type="password" inputmode="numeric" maxlength="4" placeholder="• • • •"
+        style="width:100%;font-size:28px;text-align:center;padding:12px;border:2px solid #e2e8f0;border-radius:12px;box-sizing:border-box;letter-spacing:10px;outline:none;transition:border-color .2s"/>
+      <p id="pin-error" style="color:#ef4444;font-size:13px;margin:8px 0 0;min-height:18px"></p>
+      <button id="pin-submit" style="margin-top:10px;width:100%;padding:14px;background:#6366f1;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer">
+        Unlock Dashboard
+      </button>
+      <button id="pin-cancel" style="margin-top:8px;width:100%;padding:10px;background:transparent;color:#64748b;border:none;font-size:14px;cursor:pointer">
+        Cancel
+      </button>
+    </div>`;
+  document.body.appendChild(modal);
+  const input = modal.querySelector<HTMLInputElement>("#pin-input")!;
+  const errorEl = modal.querySelector<HTMLElement>("#pin-error")!;
+  const submitBtn = modal.querySelector<HTMLButtonElement>("#pin-submit")!;
+  const cancelBtn = modal.querySelector<HTMLButtonElement>("#pin-cancel")!;
+  input.focus();
+  input.addEventListener("input", () => { if (input.value.length === 4) submitPin(); });
+  submitBtn.addEventListener("click", submitPin);
+  cancelBtn.addEventListener("click", () => modal.remove());
+  async function submitPin() {
+    const pin = input.value.trim();
+    if (pin.length < 4) { errorEl.textContent = "Please enter your 4-digit PIN."; return; }
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Checking…";
+    try {
+      const res = await fetch(`${API}/auth/pin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin }),
+      });
+      if (res.ok) {
+        const { token } = await res.json() as { token: string };
+        setParentToken(token);
+        modal.remove();
+        onSuccess();
+      } else {
+        errorEl.textContent = "Incorrect PIN. Try again.";
+        input.value = "";
+        input.focus();
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Unlock Dashboard";
+      }
+    } catch {
+      errorEl.textContent = "Cannot reach server. Check connection.";
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Unlock Dashboard";
+    }
+  }
+}
+
 // ── PARENT DASHBOARD ───────────────────────────────────────────────────────────
 async function showParentDash(profile: Profile | null) {
+  if (!getParentToken()) {
+    showPinEntry(() => showParentDash(profile));
+    return;
+  }
   showScreen("screen-parent");
   const content = document.getElementById("parent-content")!;
+  content.innerHTML = `<div class="parent-card"><p>Loading…</p></div>`;
   let profiles: Profile[];
   if (profile) {
     profiles = [profile];
   } else {
     profiles = await apiGetProfiles();
+    if (!getParentToken()) {
+      showPinEntry(() => showParentDash(null));
+      return;
+    }
   }
 
   if (profiles.length === 0) {
@@ -623,7 +706,7 @@ async function showParentDash(profile: Profile | null) {
       btn.textContent = "Resetting…";
 
       try {
-        const res = await fetch(`${API}/profiles/${id}/reset`, { method: "PUT" });
+        const res = await fetch(`${API}/profiles/${id}/reset`, { method: "PUT", headers: parentAuthHeaders() });
         if (!res.ok) throw new Error("server error");
         const updated: Profile = await res.json();
 

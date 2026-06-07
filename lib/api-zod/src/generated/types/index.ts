@@ -7,6 +7,8 @@
  */
 
 export * from './healthStatus';
+export * from './pinInput';
+export * from './pinToken';
 export * from './profile';
 export * from './profileAccuracy';
 export * from './profileAgeGroup';

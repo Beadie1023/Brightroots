@@ -5,10 +5,11 @@ import {
   CreateProfileBody,
   UpdateProgressBody,
 } from "@workspace/api-zod";
+import { requireParentAuth } from "../middleware/requireParentAuth";
 
 const router = Router();
 
-router.get("/profiles", async (req, res) => {
+router.get("/profiles", requireParentAuth, async (req, res) => {
   try {
     const profiles = await db.select().from(profilesTable).orderBy(profilesTable.createdAt);
     res.json(profiles.map(serializeProfile));
@@ -49,7 +50,7 @@ router.get("/profiles/:id", async (req, res) => {
   }
 });
 
-router.delete("/profiles/:id", async (req, res) => {
+router.delete("/profiles/:id", requireParentAuth, async (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
   try {
@@ -101,7 +102,7 @@ router.put("/profiles/:id/progress", async (req, res) => {
   }
 });
 
-router.put("/profiles/:id/reset", async (req, res) => {
+router.put("/profiles/:id/reset", requireParentAuth, async (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
   try {

@@ -99,6 +99,18 @@ export const UpdateProgressResponse = zod.object({
 
 
 /**
+ * @summary Verify parent PIN and receive a signed JWT
+ */
+export const VerifyParentPinBody = zod.object({
+  "pin": zod.string()
+})
+
+export const VerifyParentPinResponse = zod.object({
+  "token": zod.string()
+})
+
+
+/**
  * @summary Reset all progress for a profile
  */
 export const ResetProfileParams = zod.object({
