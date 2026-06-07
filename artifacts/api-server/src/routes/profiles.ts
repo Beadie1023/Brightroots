@@ -101,6 +101,23 @@ router.put("/profiles/:id/progress", async (req, res) => {
   }
 });
 
+router.put("/profiles/:id/reset", async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+  try {
+    const [updated] = await db
+      .update(profilesTable)
+      .set({ coins: 0, streak: 0, progress: {}, accuracy: {}, lastActive: null })
+      .where(eq(profilesTable.id, id))
+      .returning();
+    if (!updated) { res.status(404).json({ error: "Not found" }); return; }
+    res.json(serializeProfile(updated));
+  } catch (err) {
+    req.log.error({ err }, "Failed to reset profile");
+    res.status(500).json({ error: "Failed to reset profile" });
+  }
+});
+
 router.get("/profiles/:id/stats", async (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }

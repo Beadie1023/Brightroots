@@ -99,6 +99,25 @@ export const UpdateProgressResponse = zod.object({
 
 
 /**
+ * @summary Reset all progress for a profile
+ */
+export const ResetProfileParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ResetProfileResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "ageGroup": zod.enum(['2-3', '4-5', '6-7']),
+  "coins": zod.number(),
+  "streak": zod.number(),
+  "progress": zod.record(zod.string(), zod.number()).optional(),
+  "accuracy": zod.record(zod.string(), zod.number()).optional(),
+  "createdAt": zod.string()
+})
+
+
+/**
  * @summary Get detailed stats for a profile
  */
 export const GetProfileStatsParams = zod.object({

@@ -484,6 +484,76 @@ export const useUpdateProgress = <TError = ErrorType<unknown>,
       return useMutation(getUpdateProgressMutationOptions(options));
     }
 
+export const getResetProfileUrl = (id: number,) => {
+
+
+
+
+  return `/api/profiles/${id}/reset`
+}
+
+/**
+ * @summary Reset all progress for a profile
+ */
+export const resetProfile = async (id: number, options?: RequestInit): Promise<Profile> => {
+
+  return customFetch<Profile>(getResetProfileUrl(id),
+  {
+    ...options,
+    method: 'PUT'
+
+
+  }
+);}
+
+
+
+
+export const getResetProfileMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resetProfile>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof resetProfile>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['resetProfile'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof resetProfile>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  resetProfile(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ResetProfileMutationResult = NonNullable<Awaited<ReturnType<typeof resetProfile>>>
+
+    export type ResetProfileMutationError = ErrorType<void>
+
+    /**
+ * @summary Reset all progress for a profile
+ */
+export const useResetProfile = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resetProfile>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof resetProfile>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getResetProfileMutationOptions(options));
+    }
+
 export const getGetProfileStatsUrl = (id: number,) => {
 
 

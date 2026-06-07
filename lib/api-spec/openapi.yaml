@@ -115,6 +115,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Profile"
+  /profiles/{id}/reset:
+    put:
+      operationId: resetProfile
+      tags: [progress]
+      summary: Reset all progress for a profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Reset profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "404":
+          description: Not found
   /profiles/{id}/stats:
     get:
       operationId: getProfileStats

@@ -1037,19 +1037,51 @@ async function showParentDash(profile: Profile | null) {
   content.querySelectorAll<HTMLButtonElement>(".reset-btn").forEach(btn => {
     btn.addEventListener("click", async () => {
       const id = parseInt(btn.dataset.reset!);
-      if (confirm("Reset all progress for this learner?")) {
+      if (!confirm("Reset all progress for this learner? This cannot be undone.")) return;
+
+      btn.disabled = true;
+      btn.textContent = "Resetting…";
+
+      try {
+        const res = await fetch(`${API}/profiles/${id}/reset`, { method: "PUT" });
+        if (!res.ok) throw new Error("server error");
+        const updated: Profile = await res.json();
+
         const ls = getLocalProfiles();
         const idx = ls.findIndex(p => p.id === id);
         if (idx !== -1) {
-          ls[idx].coins = 0;
-          ls[idx].streak = 0;
-          ls[idx].progress = {};
-          ls[idx].accuracy = {};
+          ls[idx] = { ...ls[idx], coins: 0, streak: 0, progress: {}, accuracy: {} };
           localStorage.setItem("br_profiles", JSON.stringify(ls));
-          if (currentProfile?.id === id) currentProfile = ls[idx];
         }
-        showParentDash(null);
+        localStorage.removeItem(`br_progress_${id}`);
+
+        const q = getSyncQueue().filter(e => e.profileId !== id);
+        localStorage.setItem("br_sync_queue", JSON.stringify(q));
+
+        if (currentProfile?.id === id) {
+          currentProfile = { ...currentProfile, coins: 0, streak: 0, progress: {}, accuracy: {} };
+          updateDashboard();
+        }
+
+        const attachedUpdated = attachAvatar({ ...updated });
+        saveLocalProfile({ ...attachedUpdated });
+      } catch {
+        const ls = getLocalProfiles();
+        const idx = ls.findIndex(p => p.id === id);
+        if (idx !== -1) {
+          ls[idx] = { ...ls[idx], coins: 0, streak: 0, progress: {}, accuracy: {} };
+          localStorage.setItem("br_profiles", JSON.stringify(ls));
+          localStorage.removeItem(`br_progress_${id}`);
+          const q = getSyncQueue().filter(e => e.profileId !== id);
+          localStorage.setItem("br_sync_queue", JSON.stringify(q));
+          if (currentProfile?.id === id) {
+            currentProfile = { ...currentProfile, coins: 0, streak: 0, progress: {}, accuracy: {} };
+            updateDashboard();
+          }
+        }
       }
+
+      showParentDash(null);
     });
   });
 }
