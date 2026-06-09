@@ -120,6 +120,13 @@ let sessionTotal = 0;
 const LESSONS_PER_SESSION = 5;
 const BASE_PATH = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
 
+// ── API base ─────────────────────────────────────────────────────────────
+// In production set VITE_API_URL to the absolute Render backend URL.
+// In local/Replit dev the relative path routes through the shared proxy.
+const API_ROOT = import.meta.env["VITE_API_URL"]
+  ? (import.meta.env["VITE_API_URL"] as string).replace(/\/$/, "")
+  : BASE_PATH;
+
 // ── Parent Auth Token ─────────────────────────────────────────────────────
 const TOKEN_KEY = "br_parent_token";
 function getParentToken(): string | null { return localStorage.getItem(TOKEN_KEY); }
@@ -174,7 +181,7 @@ function autoSpeak(profile: Profile, text: string) {
 }
 
 // ── API ─────────────────────────────────────────────────────────────────────
-const API = `${BASE_PATH}/api`;
+const API = `${API_ROOT}/api`;
 
 async function apiGetProfiles(): Promise<Profile[]> {
   try {
